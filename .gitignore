@@ -1,0 +1,23 @@
+# ===== Java =====
+target/
+*.log
+*.class
+
+# ===== IntelliJ IDEA =====
+.idea/
+*.iml
+
+# ===== Mac =====
+.DS_Store
+
+# ===== Node =====
+node_modules/
+dist/
+
+# ===== Vue =====
+npm-debug.log*
+
+# ===== Others =====
+.serena
+
+code/springboot/src/main/resources/files/

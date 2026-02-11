@@ -1,0 +1,50 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/springboot-vue?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&serverTimezone=GMT%2b8
+    username: root
+    password: 21045312
+  # 日期格式化，加了拦截器之后会失效
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  redis:
+    host: 192.168.242.131
+    port: 6379
+    password: 21045312
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 1
+        time-between-eviction-runs: 10s
+
+# 支付宝的配置
+# appId
+alipay.appId: 9021000138648044
+# 应用私钥
+alipay.appPrivateKey: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCsjLSiPSMJoN+bQexTQsNMH/u3ZbTD5/Keqqw7htmpVHpOTOBomoIa3pfF1g8lgo5sA8aQdMX/8PVVEabvZVjqaDppnBeY16DUWOhvfAeMo1F4MVKQgKmQx2iZ3fCsEtfkYwpDZXpu36K+5vPt0S8GUlBAQcpqkXScLaZf3RpjGLDNaKrjbmXHGuHEAzjPKpGgRtIa/4bGEFDYRMgiTJB0OA4XiYS5gCvCKuUqWfopmMK5G0DUzDq5CGmsC3VCRaXCm6xNhBNVnXNymHN7o/ZlMl8acZvX+AH0MQP/bVPgQ3RB/qFOMROkx69Ki2NdN1BQ1justG3kaYt/axmgoVEhAgMBAAECggEADDwh5ssc++bLVC/1eOXoATLXX2a3zZhZzMRfWA00y9vwnDK5StGB3jPgYSfPhSJfxOrznnSZQY+tZa3Nv3XZOy3OzoRB7BWGEuiG+ri5tFA0S6h7qUFmRJzPHvHsydbANjKLnMHKT6hN2ul3bGqDwhf+FsBTgQD1Wsml3XBJGbOdWasKNzPtJddnl+3Axg1n/pNz91LEI2X74AYcOGfiRM2katEZYTo4fsQB/T3a9WPUMQob3j0GoPe1ZWO3Xh+r4Xl0QR3FxnBmcwMIYqy5YzPVVZMTgzExCCNEMMoKSqPrELDi9pjdamL4GyubYCxnc3eRpNbz6aUbzF5iooyeUQKBgQD0Jj63LQPDczH7GdE8EBDcMg7a173wXnjwbY59929gA7ELVc86WklWWfHOrOfZrSUWSRe+mR5Gi7FIZjQ+mzCTjkDXYLcvEXlesDzW+lkrV/6xpkkVybF93KXanJjNjB2RHR8AHrxAX8ukeA2Fd7pB3DMn+bqB0bScDrBwsv0alQKBgQC07MZ3lT61ZsZkI9A4XSRIhRxyShoePu292Q6HgizBj+DLT8ZKBf3U22MUU+rC7lVJjzuYP+1ecdpVKVpzGC2yHugYfPezuIj0rK5jgPShTERXDR5h5wNZi317PuY0NUlTcASdFQXf7RiNJ+VZeU4kHODvpfE7UEuinpvBK9LFXQKBgHYXJZCOClr4Ff3BYA3wK2eGIt9BKNLhrxeDtj9BdjJ3tqOn7qLn1r8YpDf2M/J6qAyecAi1oQo4ORiurqh1gcptLPnAAvqWNiFRlyvYTVcEqeGdb45FTz90gRg7VEFfe1GcR0lUlHOCoko78zZSUdnXOzsjtE1kdDpjdH4eZQP9AoGBAK/co0HjwTOktdzq7t+KsdUIBlGVc/PIaWErVjMjtotjZjdZ0L1tO4EmyxUcSMq3zhEVd/ES2pD+DCLRcokDjI9h+WqsNj3sdruWCmDQHXmX36naJ5k0aw4kR5F/31YKIb9H2EQ0BiTWmxHCIO4qumjh5UcsvuJPt2VX1MAc7+BFAoGBAPGzoP3TBqod6FsLbhhyRFmfg7Bxku6Un0C5iEAtqmUWEiMjZnBboDWGgPmhx7qldINJnAW5n1CNjcHqYaxY4K2pRoBuRbPn8X+P+r00kzzQ9I76kzpz0WGx630ium0emsT8TazNL0A9X6g9Ef1iIuajp7N5ivTHExe9EwbVU3zZ
+# 支付宝公钥
+alipay.alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq0HUwTmQEIxPEqn0rhtcUehvnuLTuBhODDNtYAUfIKbAnnDAM3eaGUMgkjo0jSuJFhMN6PPqhFIzOd31ml53q3r84qkIqS+seGe0VtthI6RrIFV9VoUIkrHH2KeSADwvYnG9tGqfxbVtg9/Y28oB67ANFXfwl4JkumTmCQDyAatfOjQtFGnFkIi85O/8CQRIypzGiox+jrnbGUgOpMaYJJ6Ye6uNgod3GLdZ1PNX2ArlnXSfSiTJrMIPWTOkYtiV5fMRTSwNpte5FODQg1/oYvVnuC/4Rr8FfGz+/WzrO1rXe9XEAkEcvejeh5dxZcV3JV2JGqQRgYGW/5cP03FR7QIDAQAB
+# 支付成功回调地址，这里使用 netapp 内网穿透，每次启动 netapp 的网址都会变化，但是回调的接口 alipay/notify 不变
+alipay.notifyUrl:  http://sxyicb.natappfree.cc/alipay/notify
+
+
+book:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    secret-key: lifeng
+    # 设置jwt过期时间
+    ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    token-name: Authorization
+# 买家账号
+#  uhslhy6615@sandbox.com
+
