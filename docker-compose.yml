@@ -1,0 +1,114 @@
+services:
+  # MySQL 数据库
+  mysql-ui:
+    image: mysql:8.0.32
+    container_name: bookshop-ui-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 21045312
+      MYSQL_DATABASE: springboot-vue
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    volumes:
+      - bookshop-ui-mysql-data:/var/lib/mysql
+      - ./bookshop.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p21045312"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bookshop-ui-network
+
+  # Redis 缓存
+  redis-ui:
+    image: redis:7-alpine
+    container_name: bookshop-ui-redis
+    restart: unless-stopped
+    command: redis-server --requirepass 21045312 --appendonly yes
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "6380:6379"
+    volumes:
+      - bookshop-ui-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "21045312", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - bookshop-ui-network
+
+  # Spring Boot 后端
+  backend-ui:
+    build:
+      context: ./源码/springboot
+      dockerfile: Dockerfile
+    container_name: bookshop-ui-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      TZ: Asia/Shanghai
+      JAVA_OPTS: >-
+        -Xms512m
+        -Xmx1024m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+    ports:
+      - "7750:7750"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql-ui:
+        condition: service_healthy
+      redis-ui:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7750/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - bookshop-ui-network
+
+  # Vue 前端
+  frontend-ui:
+    build:
+      context: ./源码/vue
+      dockerfile: Dockerfile
+    container_name: bookshop-ui-frontend
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "7749:80"
+    depends_on:
+      - backend-ui
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - bookshop-ui-network
+
+networks:
+  bookshop-ui-network:
+    driver: bridge
+
+volumes:
+  bookshop-ui-mysql-data:
+    driver: local
+  bookshop-ui-redis-data:
+    driver: local
