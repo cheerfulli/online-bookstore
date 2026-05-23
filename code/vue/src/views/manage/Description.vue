@@ -130,7 +130,7 @@ export default {
         this.$nextTick(() => {
           editor = new E('#div1')
           editor.txt.clear()
-          editor.config.uploadImgServer = 'http://localhost:9090/files/editor/upload'
+          editor.config.uploadImgServer = '/api/files/editor/upload'
           editor.config.uploadFileName = "file"
           editor.create()
         })
@@ -186,7 +186,7 @@ export default {
       if (!editor) {
         this.$nextTick(() => {
               editor = new E('#div1')
-              editor.config.uploadImgServer = 'http://localhost:9090/files/editor/upload'
+              editor.config.uploadImgServer = '/api/files/editor/upload'
               editor.config.uploadFileName = "file"
               editor.create()
               editor.txt.html(row.itemDetail)

@@ -1,138 +1,158 @@
 <template>
-  <div style="padding: 10px">
-    <div style="margin: 10px 0;">
-      <!--    功能区域-->
-      <el-button type="primary" round v-on:click="add">新增</el-button>
-      <!-- <el-button type="success" round>导入</el-button>
-      <el-button type="success" round>导出</el-button> -->
-      <!--    搜索区域-->
-      <el-button type="primary" icon="el-icon-search" style="margin-outside: 10px; float: right" @click="goSearch">搜索</el-button>
-      <el-input v-model="search" placeholder="请输入你搜索的订单名称" style="width: 20%; float: right" clearable></el-input>
+  <div class="manage-page">
+    <!-- 操作栏 -->
+    <div class="action-bar">
+      <div class="action-left">
+        <el-button type="primary" @click="add">
+          <i class="el-icon-plus"></i> 新增订单
+        </el-button>
+      </div>
+      <div class="action-right">
+        <el-input
+          v-model="search"
+          placeholder="搜索订单名称..."
+          clearable
+          class="search-input"
+          @keydown.enter.native="goSearch"
+        >
+          <template #prefix>
+            <i class="el-icon-search"></i>
+          </template>
+        </el-input>
+        <el-button type="primary" @click="goSearch">搜索</el-button>
+      </div>
     </div>
 
-    <!--    表格区域-->
-    <el-table
+    <!-- 表格区域 -->
+    <div class="table-container">
+      <el-table
         v-loading="loading"
         :data="tableData"
-        stripe border
-        style="width: 100%">
-      <el-table-column
-          prop="id"
-          label="订单ID"
-          width="80px"
-          sortable>
-      </el-table-column>
-      <el-table-column
-          prop="orderName"
-          label="商品名称">
-      </el-table-column>
-      <el-table-column
-          prop="orderNo"
-          label="订单编号" show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column label="总价">
-        <template #default="scope">
-          <h3 style="color: #d71d3f">￥{{ (scope.row.payPrice * scope.row.count).toFixed(1) }}</h3>
-        </template>
-      </el-table-column>
-      <el-table-column
-          prop="postFee"
-          label="邮费">
-      </el-table-column>
-      <el-table-column
-          prop="createTime" sortable
-          label="创建时间" width="150px">
-      </el-table-column>
-      <el-table-column
-          prop="paymentTime" sortable
-          label="支付时间" width="150px">
-      </el-table-column>
-      <el-table-column label="支付状态" width="80px">
-        <!--        这里应该是使用template 和default标签把那个整个data数据取出来，然后scope就是整个数据，每一行数据就是scope.row,tableData=scope-->
-        <template #default="scope">
-          <span v-if="scope.row.state === 2" style="color: orange">未支付</span>
-          <span v-if="scope.row.state === 1" style="color: green">已支付</span>
-          <span v-if="scope.row.state === 3" style="color: #b91313">已退款</span>
-          <span v-if="scope.row.state === 4" style="color: blue">已发货</span>
-          <span v-if="scope.row.state === 5" style="color: purple">已收货</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-          prop="username"
-          label="购买人">
-      </el-table-column>
-      <!--     操作区域-->
-      <el-table-column fixed="right" label="操作" align = "center" width="250px">
-        <template #default="scope">
-          <!--          这里scope.row传入直接是传入一行的数据对象，可以使用row.username取出用户名的-->
-          <el-button v-on:click="editeClick(scope.row)" type="primary" size="small">编辑</el-button>
-          <el-popconfirm title="确定要删除这个订单吗？" @confirm="deleteClick(scope.row.id)" style="margin-left: 10px">
-            <template #reference>
-            <el-button type="danger" size="small">删除</el-button>
-            </template>
-          </el-popconfirm>
-          <el-button  v-if="scope.row.state === 1" v-on:click="sendClick(scope.row.id)" type="success" size="small" style="margin-left: 10px;">发货</el-button>
-          <el-button  v-if="scope.row.state !== 1" type="info" size="small" style="margin-left: 10px;">发货</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!--    页码区域以及弹出表单-->
-    <div style="margin: 20px 0">
-      <!--    页码区域,在Vue2里面是不支持v-model:prop="data"的，所以我们要用v-bind:prop.sync="data"实现双向绑定-->
-      <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page.sync="currentPage"
-          :page-sizes="[5,10,20]"
-          :page-size.sync="pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="totalNumber">
-      </el-pagination>
-
-      <!--      添加商品的表单，不加sync子组件里面的值改变，就传不到父组件里面去了-->
-      <el-dialog title="新增/修改订单" :visible.sync="dialogVisible" width="40%">
-        <!--        输入表单-->
-        <el-form v-bind:model="form" label-width="120px">
-          <el-form-item label="商品名称：">
-            <el-input v-model="form.orderName" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="订单编号：">
-            <el-input v-model="form.orderNo" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="单价：">
-            <el-input v-model="form.payPrice" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="邮费：">
-            <el-input v-model="form.postFee" style="width: 80%"></el-input>
-          </el-form-item>
-          <el-form-item label="订单状态：">
-              <el-radio v-model="form.state" :label="1">已支付</el-radio>
-              <el-radio v-model="form.state" :label="2">未支付</el-radio>
-          </el-form-item>
-          <el-form-item label="创建时间：">
-            <el-date-picker
-                v-model="form.createTime" type="datetime" placeholder="选择创建时间"
-                value-format="yyyy-MM-dd HH:mm:ss" clearable>
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="支付时间：">
-            <el-date-picker
-                v-model="form.paymentTime" type="datetime" placeholder="选择支付时间"
-                value-format="yyyy-MM-dd HH:mm:ss" clearable>
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="购买人：">
-            <el-input v-model="form.username" style="width: 80%"></el-input>
-          </el-form-item>
-        </el-form>
-        <!--        下面的按钮-->
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="save">确 定</el-button>
-        </span>
-      </el-dialog>
+        stripe
+        :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: '600' }"
+      >
+        <el-table-column prop="id" label="订单ID" width="80" sortable align="center"></el-table-column>
+        <el-table-column prop="orderName" label="商品名称" min-width="150"></el-table-column>
+        <el-table-column prop="orderNo" label="订单编号" show-overflow-tooltip min-width="180"></el-table-column>
+        <el-table-column label="总价" width="120" align="center">
+          <template #default="scope">
+            <span class="price-text">¥{{ (scope.row.payPrice * scope.row.count).toFixed(2) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="postFee" label="邮费" width="80" align="center">
+          <template #default="scope">
+            <span>{{ scope.row.postFee > 0 ? '¥' + scope.row.postFee : '包邮' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" sortable label="创建时间" width="160" align="center"></el-table-column>
+        <el-table-column prop="paymentTime" sortable label="支付时间" width="160" align="center"></el-table-column>
+        <el-table-column label="状态" width="100" align="center">
+          <template #default="scope">
+            <span v-if="scope.row.state === 1" class="status-tag status-tag--success">已支付</span>
+            <span v-else-if="scope.row.state === 2" class="status-tag status-tag--warning">未支付</span>
+            <span v-else-if="scope.row.state === 3" class="status-tag status-tag--danger">已退款</span>
+            <span v-else-if="scope.row.state === 4" class="status-tag status-tag--info">已发货</span>
+            <span v-else-if="scope.row.state === 5" class="status-tag status-tag--purple">已收货</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="username" label="购买人" width="100" align="center"></el-table-column>
+        <el-table-column fixed="right" label="操作" align="center" width="180">
+          <template #default="scope">
+            <div class="action-links">
+              <el-button type="text" size="mini" @click="editeClick(scope.row)">
+                编辑
+              </el-button>
+              <el-divider direction="vertical"></el-divider>
+              <el-popconfirm title="确定要删除这个订单吗？" @confirm="deleteClick(scope.row.id)">
+                <template #reference>
+                  <el-button type="text" size="mini" class="danger-link">删除</el-button>
+                </template>
+              </el-popconfirm>
+              <el-divider direction="vertical"></el-divider>
+              <el-button
+                type="text"
+                size="mini"
+                :disabled="scope.row.state !== 1"
+                :class="{ 'success-link': scope.row.state === 1 }"
+                @click="sendClick(scope.row.id)"
+              >
+                发货
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </div>
+
+    <!-- 分页 -->
+    <div class="pagination-wrapper">
+      <el-pagination
+        background
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-sizes="[5, 10, 20]"
+        :page-size.sync="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="totalNumber"
+      ></el-pagination>
+    </div>
+
+    <!-- 新增/编辑弹窗 -->
+    <el-dialog
+      :title="form.id ? '编辑订单' : '新增订单'"
+      :visible.sync="dialogVisible"
+      width="500px"
+      class="manage-dialog"
+    >
+      <el-form :model="form" label-width="100px" class="manage-form">
+        <el-form-item label="商品名称">
+          <el-input v-model="form.orderName" placeholder="请输入商品名称"></el-input>
+        </el-form-item>
+        <el-form-item label="订单编号">
+          <el-input v-model="form.orderNo" placeholder="请输入订单编号"></el-input>
+        </el-form-item>
+        <el-form-item label="单价">
+          <el-input v-model="form.payPrice" placeholder="请输入单价" type="number"></el-input>
+        </el-form-item>
+        <el-form-item label="邮费">
+          <el-input v-model="form.postFee" placeholder="请输入邮费" type="number"></el-input>
+        </el-form-item>
+        <el-form-item label="订单状态">
+          <el-radio-group v-model="form.state">
+            <el-radio :label="1">已支付</el-radio>
+            <el-radio :label="2">未支付</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="创建时间">
+          <el-date-picker
+            v-model="form.createTime"
+            type="datetime"
+            placeholder="选择创建时间"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            clearable
+            style="width: 100%"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item label="支付时间">
+          <el-date-picker
+            v-model="form.paymentTime"
+            type="datetime"
+            placeholder="选择支付时间"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            clearable
+            style="width: 100%"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item label="购买人">
+          <el-input v-model="form.username" placeholder="请输入购买人"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="save">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -296,4 +316,177 @@ export default {
 }
 </script>
 <style scoped>
+.manage-page {
+  padding: 20px;
+}
+
+/* 操作栏 */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: #fff;
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.06));
+}
+
+.action-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-input {
+  width: 280px;
+}
+
+.search-input >>> .el-input__inner {
+  border-radius: 20px;
+  padding-left: 36px;
+}
+
+/* 表格容器 */
+.table-container {
+  background: #fff;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.06));
+}
+
+/* 价格样式 */
+.price-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-color, #ff5000);
+  font-family: "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 状态标签 */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-tag--success {
+  background: rgba(82, 196, 26, 0.1);
+  color: #52c41a;
+}
+
+.status-tag--warning {
+  background: rgba(250, 173, 20, 0.1);
+  color: #faad14;
+}
+
+.status-tag--danger {
+  background: rgba(245, 34, 45, 0.1);
+  color: #f5222d;
+}
+
+.status-tag--info {
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+}
+
+.status-tag--purple {
+  background: rgba(114, 46, 209, 0.1);
+  color: #722ed1;
+}
+
+/* 表格操作按钮 */
+.table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.table-actions .el-button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* 文字链接操作按钮 */
+.action-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.action-links .el-button--text {
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--primary-color, #ff5000);
+}
+
+.action-links .el-button--text:hover {
+  color: var(--primary-light, #ff7433);
+}
+
+.action-links .danger-link {
+  color: #f56c6c !important;
+}
+
+.action-links .danger-link:hover {
+  color: #f78989 !important;
+}
+
+.action-links .success-link {
+  color: #52c41a !important;
+}
+
+.action-links .success-link:hover {
+  color: #73d13d !important;
+}
+
+.action-links .el-button.is-disabled {
+  color: #c0c4cc !important;
+}
+
+.action-links .el-divider--vertical {
+  margin: 0 4px;
+  height: 14px;
+  background-color: #dcdfe6;
+}
+
+/* 分页 */
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 弹窗样式 */
+.manage-dialog >>> .el-dialog {
+  border-radius: var(--radius-lg, 12px);
+}
+
+.manage-dialog >>> .el-dialog__header {
+  border-bottom: 1px solid var(--border-color, #e8e8e8);
+  padding: 16px 20px;
+}
+
+.manage-dialog >>> .el-dialog__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.manage-dialog >>> .el-dialog__body {
+  padding: 24px 20px;
+}
+
+.manage-form .el-form-item {
+  margin-bottom: 18px;
+}
+
+.manage-form >>> .el-input__inner {
+  border-radius: var(--radius-sm, 4px);
+}
 </style>

@@ -1,5 +1,256 @@
+/* ========================================
+   TJU网上书店 - 全局样式
+   ======================================== */
+
+/* CSS 变量定义 */
+:root {
+  /* 主色调 - 橙红风格 */
+  --primary-color: #ff5000;
+  --primary-light: #ff7433;
+  --primary-dark: #e64500;
+
+  /* 辅助色 */
+  --secondary-color: #ffd700;
+  --accent-color: #d71d3f;
+
+  /* 功能色 */
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --info-color: #1890ff;
+
+  /* 中性色 */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-placeholder: #999999;
+  --border-color: #e8e8e8;
+  --bg-page: #f5f5f5;
+  --bg-card: #ffffff;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 6px 16px rgba(255, 80, 0, 0.15);
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* 基础重置 */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 平滑过渡 */
+a,
+button,
+.el-button,
+.el-card,
+.el-tag,
+.el-menu-item,
+.el-input__inner {
+  transition: all 0.25s ease;
+}
+
+/* 链接样式 */
+a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-color);
+}
+
+/* 卡片悬停效果 */
+.el-card {
+  border-radius: var(--radius-md);
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.el-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+/* 按钮优化 */
+.el-button--primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.el-button--danger {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.el-button--danger:hover,
+.el-button--danger:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* 输入框聚焦效果 */
+.el-input__inner:focus {
+  border-color: var(--primary-color);
+}
+
+/* 标签优化 */
+.el-tag {
+  border-radius: var(--radius-sm);
+}
+
+/* 表格优化 */
+.el-table {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.el-table th {
+  background-color: #fafafa !important;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 0;
+}
+
+.el-table td {
+  padding: 16px 0;
+  color: var(--text-secondary);
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background: #fafafa;
+}
+
+.el-table--border::after,
+.el-table--group::after,
+.el-table::before {
+  background-color: var(--border-color);
+}
+
+.el-table__row:hover > td {
+  background-color: rgba(255, 80, 0, 0.04) !important;
+}
+
+.el-table .cell {
+  line-height: 1.5;
+}
+
+/* 价格样式 - 统一规范 */
+.price,
+.price-text,
+[class*="price"] {
+  font-family: "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+}
+
+.price-large {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.price-medium {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.price-small {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.price-muted {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+/* 状态标签样式 */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-tag--success {
+  background: rgba(82, 196, 26, 0.1);
+  color: var(--success-color);
+}
+
+.status-tag--warning {
+  background: rgba(250, 173, 20, 0.1);
+  color: var(--warning-color);
+}
+
+.status-tag--danger {
+  background: rgba(245, 34, 45, 0.1);
+  color: var(--error-color);
+}
+
+.status-tag--info {
+  background: rgba(24, 144, 255, 0.1);
+  color: var(--info-color);
+}
+
+.status-tag--purple {
+  background: rgba(114, 46, 209, 0.1);
+  color: #722ed1;
+}
+
+/* 分页器优化 */
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: var(--primary-color);
+}
+
+/* 菜单选中状态 */
+.el-menu-item.is-active {
+  color: var(--primary-color) !important;
+}
+
+/* 消息提示优化 */
+.el-message--success .el-message__content {
+  color: var(--success-color);
+}
+
+.el-message--error .el-message__content {
+  color: var(--error-color);
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

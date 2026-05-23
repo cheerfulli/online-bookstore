@@ -1,86 +1,106 @@
 <template>
-  <div style="width: 900px;margin: 25px">
-<!--    购物车上面部分的结算栏-->
-    <div style="display: flex;margin: 20px 10px">
-      <h4>购物车（全部：{{this.totalNumber}}）</h4>
-      <h4 style="margin-top: 3px;margin-left: 300px;margin-right: 25px">已选商品</h4>
-      <h3 style="color: #d71d3f;font-size:25px">¥:{{totalPrice}}</h3>
-      <el-button round type="danger" icon="el-icon-shopping-cart-full" @click="checkout"
-                 style="margin-left: 50px;font-size: 15px;width: 100px"> 结  算 </el-button>
-      <el-button round type="primary" icon="el-icon-delete" @click="deleteCarts"
-                 style="margin-left: 50px;font-size: 15px;width: 100px"> 删  除 </el-button>
+  <div class="cart-page">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2><i class="el-icon-shopping-cart-2"></i> 我的购物车</h2>
+      <span class="item-count">共 {{ totalNumber }} 件商品</span>
     </div>
 
-    <!--    表格区域-->
-    <el-table
+    <!-- 结算栏 -->
+    <div class="cart-summary">
+      <div class="summary-left">
+        <span class="selected-info">
+          已选 <strong>{{ cart.length }}</strong> 件商品
+        </span>
+      </div>
+      <div class="summary-right">
+        <div class="total-price">
+          <span class="label">合计：</span>
+          <span class="price">¥{{ totalPrice }}</span>
+        </div>
+        <el-button class="btn-delete" @click="deleteCarts" :disabled="cart.length === 0">
+          <i class="el-icon-delete"></i> 删除
+        </el-button>
+        <el-button class="btn-checkout" type="primary" @click="checkout" :disabled="cart.length === 0">
+          <i class="el-icon-shopping-bag-1"></i> 结算
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="cart-table">
+      <el-table
         v-loading="loading"
         :data="tableData"
-        stripe border
-        :default-sort = "{prop: 'createTime', order: 'descending'}"
-        @selection-change="selectChange">
-      <el-table-column
-          type="selection" align="center"
-          width="55">
-      </el-table-column>
+        @selection-change="selectChange"
+        :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: '600' }"
+      >
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
 
-      <!--      商品预览图-->
-      <el-table-column
-          label="商品预览">
-        <template #default="scope">
-          <el-image
-              style="width: 100px; height: 100px"
-              :src="scope.row.cartPicture"
-              :preview-src-list="[scope.row.orderPicture]">
-          </el-image>
-        </template>
-      </el-table-column>
+        <el-table-column label="商品信息" min-width="300">
+          <template #default="scope">
+            <div class="product-info">
+              <el-image
+                class="product-image"
+                :src="scope.row.cartPicture"
+                :preview-src-list="[scope.row.cartPicture]"
+                fit="cover"
+              ></el-image>
+              <div class="product-detail">
+                <p class="product-name">{{ scope.row.cartName }}</p>
+                <p class="product-shipping">
+                  <i class="el-icon-truck"></i>
+                  邮费：{{ scope.row.postFee > 0 ? '¥' + scope.row.postFee : '包邮' }}
+                </p>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
 
-      <el-table-column
-          prop="cartName"
-          label="商品名称">
-      </el-table-column>
+        <el-table-column label="单价" width="120" align="center">
+          <template #default="scope">
+            <span class="unit-price">¥{{ scope.row.payPrice }}</span>
+          </template>
+        </el-table-column>
 
-      <el-table-column
-          prop="postFee"
-          label="邮费">
-      </el-table-column>
+        <el-table-column label="数量" width="150" align="center">
+          <template #default="scope">
+            <el-input-number
+              v-model="scope.row.count"
+              :min="1"
+              size="small"
+              @change="selectChange(cart)"
+            ></el-input-number>
+          </template>
+        </el-table-column>
 
-      <el-table-column label="购买数量" width="160px" align="center">
-        <template #default="scope">
-          <el-input-number v-model="scope.row.count" :min=1></el-input-number>
-        </template>
-      </el-table-column>
+        <el-table-column label="小计" width="120" align="center">
+          <template #default="scope">
+            <span class="subtotal">¥{{ (scope.row.payPrice * scope.row.count).toFixed(2) }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <el-table-column label="价格" width="120px" align="center">
-        <template #default="scope">
-          <h4 style="color: #d71d3f;font-size: 20px;">￥{{(scope.row.payPrice * scope.row.count).toFixed(2)}}</h4>
-        </template>
-      </el-table-column>
+      <!-- 空状态 -->
+      <div v-if="!loading && tableData.length === 0" class="empty-cart">
+        <i class="el-icon-shopping-cart-1"></i>
+        <p>购物车空空如也</p>
+        <el-button type="primary" size="small" @click="$router.push('/shop')">去逛逛</el-button>
+      </div>
+    </div>
 
-      <!-- <el-table-column
-          prop="createTime"
-          label="创建时间" sortable width="140px">
-      </el-table-column>
-      <el-table-column label="支付状态"> -->
-        <!--        这里应该是使用template 和default标签把那个整个data数据取出来，然后scope就是整个数据，每一行数据就是scope.row,tableData=scope-->
-        <!-- <template #default="scope">
-          <span v-if="scope.row.state === 2" style="color: orange">未支付</span>
-          <span v-if="scope.row.state === 1" style="color: green">已支付</span>
-        </template>
-      </el-table-column> -->
-    </el-table>
-
-    <!--    页码区域,在Vue2里面是不支持v-model:prop="data"的，所以我们要用v-bind:prop.sync="data"实现双向绑定-->
-    <div style="margin: 20px 0">
+    <!-- 分页 -->
+    <div class="pagination-wrapper" v-if="totalNumber > 0">
       <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page.sync="currentPage"
-          :page-sizes="[5,10,20]"
-          :page-size.sync="pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="totalNumber">
-      </el-pagination>
+        background
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-sizes="[5, 10, 20]"
+        :page-size.sync="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="totalNumber"
+      ></el-pagination>
     </div>
   </div>
 </template>
@@ -91,39 +111,25 @@ import request from "@/utils/request";
 export default {
   name: "ShoppingCart",
   created() {
-    document.title = "我的购物车";
-    // 取出当前用户信息
-    // 取出session的字符串,为了防止取到空值，||一个空对象
+    document.title = "我的购物车 - TJU网上书店";
     let str = sessionStorage.getItem("user") || "{}";
-    // 赋值
     this.user = JSON.parse(str);
-    // 加载数据
     this.loadData();
   },
   data() {
     return {
-      // 用户选中的商品添加到购物车,是一个数组
       cart: [],
-      // 表示表格正在加载
       loading: true,
-      // 商品总价格
       totalPrice: 0,
-      // 取出的用户信息
       user: {},
-      // 总数据数
-      totalNumber: 400,
-      // 当前页码
+      totalNumber: 0,
       currentPage: 1,
-      // 一页多少个
       pageSize: 10,
-      // 输入框的数据
       search: '',
-      // 表格的数据
       tableData: []
     }
   },
   methods: {
-    // 加载表格数据,Get请求，Get请求不能直接传对象，只有Post可以直接传对象进去
     loadData() {
       this.loading = true;
       request.get("/cart/getCarts", {
@@ -131,31 +137,22 @@ export default {
           pageNum: this.currentPage,
           pageSize: this.pageSize,
           search: this.search,
-          // state: 2,
         }
       }).then(res => {
         this.tableData = res.data.records;
         this.totalNumber = res.data.total;
         this.loading = false;
       })
-
-      // /order/user_order
     },
-    // 表单每页大小的改变，因为有了双向绑定，直接更新一下数据就好了
     handleSizeChange() {
       this.loadData();
     },
-    // 改变当前页码
-    handleCurrentChange: function () {
+    handleCurrentChange() {
       this.loadData();
     },
-    // 选择商品，计算价格
-    selectChange(val){
+    selectChange(val) {
       this.cart = val;
-      // console.log("现在的购物车: ");
-      // console.log(this.cart);
-      // 每次选择商品之后重新计算价格
-      if (this.cart){
+      if (this.cart) {
         this.totalPrice = 0;
         this.cart.forEach(item => {
           this.totalPrice += item.payPrice * item.count;
@@ -163,46 +160,229 @@ export default {
         this.totalPrice = this.totalPrice.toFixed(2);
       }
     },
-    // 结账
-    checkout(){
-      // 直接将前端购物车里面的每个商品订单回传回去
-      if (this.cart.length > 0){
-        request.post("/cart/buyCart", this.cart, {
-          params: {
-            totalPrice: this.totalPrice,
-            // todo 在Web端实现地址选择
-            addressId: 4
-          }
-        }).then(res => {
-          alert("即将进入支付页面，请注意支付环境安全");
-          window.open(res.data);
-        })
-      }else {
-        this.$message.error("您没有添加任何商品~");
+    checkout() {
+      if (this.cart.length > 0) {
+        this.$confirm('确认结算选中的商品吗？', '结算确认', {
+          confirmButtonText: '确认结算',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          request.post("/cart/buyCart", this.cart, {
+            params: {
+              totalPrice: this.totalPrice,
+              addressId: 4
+            }
+          }).then(res => {
+            this.$message.success("即将进入支付页面");
+            window.open(res.data);
+          })
+        });
+      } else {
+        this.$message.warning("请先选择要结算的商品");
       }
     },
-    deleteCarts(){
-        request.post("/cart/deleteCarts", this.cart).then(res=>{
-        if (res.code === '0') {
-            this.$message({
-            type: "warning",
-            message: "删除成功",
-            })
-        }else {
-          this.$message({
-            type: "error",
-            message: res.msg,
-          })
-        }
-      })
-      // 更新数据
-      this.loadData();
+    deleteCarts() {
+      if (this.cart.length === 0) {
+        this.$message.warning("请先选择要删除的商品");
+        return;
+      }
+      this.$confirm('确定删除选中的商品吗？', '删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        request.post("/cart/deleteCarts", this.cart).then(res => {
+          if (res.code === '0') {
+            this.$message.success("删除成功");
+            this.loadData();
+          } else {
+            this.$message.error(res.msg);
+          }
+        })
+      });
     }
-
   },
 }
 </script>
 
 <style scoped>
+.cart-page {
+  padding: 24px;
+}
 
+/* 页面标题 */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #e8e8e8);
+}
+
+.page-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-header h2 i {
+  color: var(--primary-color, #ff5000);
+}
+
+.item-count {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+}
+
+/* 结算栏 */
+.cart-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.06));
+}
+
+.summary-left .selected-info {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+}
+
+.summary-left .selected-info strong {
+  color: var(--primary-color, #ff5000);
+  font-size: 16px;
+  margin: 0 4px;
+}
+
+.summary-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.total-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.total-price .label {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+}
+
+.total-price .price {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary-color, #ff5000);
+  font-family: "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+}
+
+.btn-delete {
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+}
+
+.btn-checkout {
+  padding: 10px 28px;
+  border-radius: var(--radius-md, 8px);
+  background: linear-gradient(135deg, #ff5000 0%, #ff7433 100%);
+  border: none;
+  font-size: 15px;
+}
+
+.btn-checkout:hover {
+  background: linear-gradient(135deg, #e64500 0%, #ff5000 100%);
+}
+
+/* 表格 */
+.cart-table {
+  background: #fff;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+}
+
+.cart-table >>> .el-table {
+  border-radius: var(--radius-md, 8px);
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm, 4px);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-detail {
+  flex: 1;
+}
+
+.product-name {
+  font-size: 14px;
+  color: var(--text-primary, #333);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.product-shipping {
+  font-size: 12px;
+  color: var(--text-placeholder, #999);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.unit-price {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  font-family: "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+}
+
+.subtotal {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-color, #ff5000);
+  font-family: "DIN Alternate", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 空状态 */
+.empty-cart {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-placeholder, #999);
+}
+
+.empty-cart i {
+  font-size: 64px;
+  margin-bottom: 16px;
+  color: #ddd;
+}
+
+.empty-cart p {
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+/* 分页 */
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
 </style>
