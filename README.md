@@ -1,6 +1,6 @@
 # Online Bookstore
 
-一个基于 Spring Boot + Vue 2 的在线书店系统，包含用户端商城和后台管理端。项目采用前后端分离结构，后端提供 REST API，前端通过 Vue CLI 开发服务器代理到后端接口。
+一个基于 Spring Boot + Vue 2 的网上书店系统，包含用户端商城和后台管理端。项目采用前后端分离结构，后端提供 REST API，前端通过 Vue CLI 开发服务器代理到后端接口。
 
 ## 功能概览
 
